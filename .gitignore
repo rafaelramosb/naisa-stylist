@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env
+.env*.local
+*.tsbuildinfo
+.vercel
+mobile/android/app/build
+mobile/android/.gradle
+mobile/android/local.properties
+mobile/node_modules
+*.keystore
+!mobile/android/debug.keystore

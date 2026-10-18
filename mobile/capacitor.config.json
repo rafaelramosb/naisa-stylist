@@ -1,0 +1,23 @@
+{
+  "appId": "co.naisaballesteros.stylist",
+  "appName": "NAISA Stylist",
+  "webDir": "www",
+  "server": {
+    "url": "https://naisa-stylist.vercel.app/app",
+    "allowNavigation": ["naisa-stylist.vercel.app", "*.supabase.co"],
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#fbf7f2"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#3e2c26",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_INSIDE"
+    },
+    "StatusBar": { "backgroundColor": "#3e2c26", "style": "DARK" }
+  }
+}
