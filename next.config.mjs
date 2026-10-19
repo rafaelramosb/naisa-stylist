@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://*.supabase.co";
+const supabase = "https://octhvacvqcdkhhmbnpsl.supabase.co"; // ver lib/supabase/config.ts
 
 const csp = [
   "default-src 'self'",

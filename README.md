@@ -67,7 +67,7 @@ Comprobación: `https://naisa-stylist.vercel.app/api/health` debe responder `"sc
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://octhvacvqcdkhhmbnpsl.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | clave publicable de Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | service role (sensible) |
+| `NAISA_SUPABASE_SERVICE_ROLE_KEY` | service role del proyecto naisa-stylist (opcional, para borrar cuentas) |
 | `SUBSCRIPTION_APPLY_SECRET` | el secreto guardado en `private.config.webhook_secret` (te lo entregamos aparte) |
 | `ANTHROPIC_API_KEY` | clave de console.anthropic.com |
 | `MP_ACCESS_TOKEN` | Access Token de producción de Mercado Pago Colombia |
