@@ -50,7 +50,13 @@ Esquema, RLS, funciones y buckets privados ya están aplicados en `naisa-stylist
 
 1. **Authentication → URL Configuration**: *Site URL* = `https://naisa-stylist.vercel.app` y en *Redirect URLs* agrega `https://naisa-stylist.vercel.app/auth/callback`.
 2. **Authentication → SMTP**: configura un SMTP propio (Resend, SendGrid, Amazon SES). El SMTP por defecto de Supabase solo envía correos a miembros de tu organización, así que los usuarios reales no recibirían la confirmación.
-3. **Project Settings → API**: copia la *service_role key* para `SUPABASE_SERVICE_ROLE_KEY` (necesaria para borrar cuentas).
+3. **Authentication → Email Templates → Confirm signup**: cambia el enlace por
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/app`
+   (así la confirmación funciona aunque el correo se abra en otro dispositivo). Haz lo mismo en *Magic Link* con `type=magiclink`.
+4. **Authentication → Rate Limits**: tras configurar el SMTP, sube "emails sent per hour" (p. ej. 100). Con el SMTP por defecto el límite es muy bajo y aparece *email rate limit exceeded*.
+5. **Project Settings → API**: copia la *service_role key* para `SUPABASE_SERVICE_ROLE_KEY` (necesaria para borrar cuentas).
+
+Comprobación: `https://naisa-stylist.vercel.app/api/health` debe responder `"schema": "ok"` y `"supabase_project": "octhvacvqcdkhhmbnpsl"`.
 
 ### 2. Vercel
 1. vercel.com/new → importa `rafaelramosb/naisa-stylist` con nombre de proyecto **naisa-stylist** (la app Android apunta a `naisa-stylist.vercel.app`).

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
 import { createClient } from "@/lib/supabase/client";
+import { authErrorEs } from "@/lib/auth-errors";
 
 function AuthForm() {
   const params = useSearchParams();
@@ -14,34 +15,41 @@ function AuthForm() {
   const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const notice = params.get("confirmado") ? { kind: "ok" as const, text: "¡Correo confirmado! Ingresa con tu correo y contraseña." }
+    : params.get("error") === "enlace" ? { kind: "err" as const, text: "El enlace de confirmación expiró o ya se usó. Ingresa o pide uno nuevo." } : null;
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(notice);
+  const [canResend, setCanResend] = useState(params.get("error") === "enlace");
   const plan = params.get("plan");
   const next = params.get("next") ?? (plan ? `/app/plan?elegir=${plan}` : "/app");
+  const redirectTo = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true); setMsg(null);
+    setBusy(true); setMsg(null); setCanResend(false);
     const supabase = createClient();
     try {
       if (mode === "registro") {
         if (!consent) throw new Error("Debes aceptar la política de tratamiento de datos.");
         const { data, error } = await supabase.auth.signUp({
           email, password,
-          options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+          options: { data: { full_name: name }, emailRedirectTo: redirectTo() },
         });
         if (error) throw error;
         if (!data.session) {
-          setMsg({ kind: "ok", text: "Te enviamos un correo para confirmar tu cuenta. Ábrelo desde este dispositivo." });
+          setMsg({ kind: "ok", text: `Te enviamos un correo a ${email} para confirmar tu cuenta. Si no llega en 2 minutos, revisa spam o reenvíalo.` });
+          setCanResend(true);
           return;
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw new Error("Correo o contraseña incorrectos.");
+        if (error) throw error;
       }
       router.replace(next);
       router.refresh();
     } catch (err) {
-      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Algo salió mal" });
+      const issue = authErrorEs(err);
+      setMsg({ kind: "err", text: issue.text });
+      if (issue.canResend) setCanResend(true);
     } finally {
       setBusy(false);
     }
@@ -50,9 +58,17 @@ function AuthForm() {
   async function magicLink() {
     if (!email) { setMsg({ kind: "err", text: "Escribe tu correo primero." }); return; }
     setBusy(true);
-    const { error } = await createClient().auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` } });
+    const { error } = await createClient().auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo(), shouldCreateUser: false } });
     setBusy(false);
-    setMsg(error ? { kind: "err", text: error.message } : { kind: "ok", text: "Revisa tu correo: te enviamos un enlace de acceso." });
+    setMsg(error ? { kind: "err", text: authErrorEs(error).text } : { kind: "ok", text: "Revisa tu correo: te enviamos un enlace de acceso." });
+  }
+
+  async function resend() {
+    if (!email) { setMsg({ kind: "err", text: "Escribe tu correo para reenviarte el enlace." }); return; }
+    setBusy(true);
+    const { error } = await createClient().auth.resend({ type: "signup", email, options: { emailRedirectTo: redirectTo() } });
+    setBusy(false);
+    setMsg(error ? { kind: "err", text: authErrorEs(error).text } : { kind: "ok", text: `Listo, reenviamos el enlace a ${email}.` });
   }
 
   return (
@@ -73,6 +89,7 @@ function AuthForm() {
         </label>
       )}
       {msg && <div className={`alert ${msg.kind === "ok" ? "alert-ok" : "alert-err"}`} role="status">{msg.text}</div>}
+      {canResend && <button type="button" className="btn btn-ghost btn-block" onClick={resend} disabled={busy}>Reenviar correo de confirmación</button>}
       <button className="btn btn-block" disabled={busy}>{busy ? <span className="spin" /> : mode === "registro" ? "Crear cuenta gratis" : "Entrar"}</button>
       {mode === "login" && <button type="button" className="btn btn-ghost btn-block" onClick={magicLink} disabled={busy}>Recibir enlace por correo</button>}
       <p className="small muted" style={{ textAlign: "center" }}>
