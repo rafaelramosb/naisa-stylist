@@ -21,13 +21,16 @@ export async function handleAuthRedirect(request: Request) {
   const type = url.searchParams.get("type") as EmailOtpType | null;
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    return error ? to("/ingresar?error=enlace") : to(safeNext);
+    if (error) return to(type === "recovery" ? "/restablecer" : "/ingresar?error=enlace");
+    return to(type === "recovery" ? "/restablecer" : safeNext);
   }
 
   const code = url.searchParams.get("code");
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    return error ? to("/ingresar?confirmado=1") : to(safeNext);
+    if (!error) return to(safeNext);
+    // Recuperación de contraseña abierta en otro navegador: la página explica cómo pedir otro enlace
+    return safeNext === "/restablecer" ? to("/restablecer") : to("/ingresar?confirmado=1");
   }
   return to("/ingresar");
 }

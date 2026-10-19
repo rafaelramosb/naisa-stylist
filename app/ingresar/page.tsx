@@ -9,7 +9,8 @@ import { authErrorEs } from "@/lib/auth-errors";
 function AuthForm() {
   const params = useSearchParams();
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "registro">(params.get("modo") === "registro" ? "registro" : "login");
+  const initialMode = params.get("modo");
+  const [mode, setMode] = useState<"login" | "registro" | "recuperar">(initialMode === "registro" || initialMode === "recuperar" ? initialMode : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -28,6 +29,14 @@ function AuthForm() {
     setBusy(true); setMsg(null); setCanResend(false);
     const supabase = createClient();
     try {
+      if (mode === "recuperar") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/restablecer")}`,
+        });
+        if (error) throw error;
+        setMsg({ kind: "ok", text: `Si ${email} tiene una cuenta, te enviamos un enlace para crear una nueva contraseña. Revisa también spam.` });
+        return;
+      }
       if (mode === "registro") {
         if (!consent) throw new Error("Debes aceptar la política de tratamiento de datos.");
         const { data, error } = await supabase.auth.signUp({
@@ -71,17 +80,29 @@ function AuthForm() {
     setMsg(error ? { kind: "err", text: authErrorEs(error).text } : { kind: "ok", text: `Listo, reenviamos el enlace a ${email}.` });
   }
 
+  const TITLES = {
+    login: ["Bienvenida de nuevo", "Entra para ver tu clóset y tus looks."],
+    registro: ["Crea tu cuenta", "Gratis, sin tarjeta. Tu clóset digital en minutos."],
+    recuperar: ["Recupera tu acceso", "Te enviaremos un enlace para crear una nueva contraseña."],
+  } as const;
+  const switchTo = (m: typeof mode) => { setMode(m); setMsg(null); setCanResend(false); };
+
   return (
     <form onSubmit={submit} className="card stack" style={{ width: "100%", maxWidth: 420 }}>
       <div className="stack" style={{ "--gap": "6px" } as React.CSSProperties}>
-        <h2>{mode === "registro" ? "Crea tu cuenta" : "Bienvenida de nuevo"}</h2>
-        <p className="muted small">{mode === "registro" ? "Gratis, sin tarjeta. Tu clóset digital en minutos." : "Entra para ver tu clóset y tus looks."}</p>
+        <h2>{TITLES[mode][0]}</h2>
+        <p className="muted small">{TITLES[mode][1]}</p>
       </div>
       {mode === "registro" && (
         <label>Nombre<input type="text" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required /></label>
       )}
       <label>Correo<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
-      <label>Contraseña<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} autoComplete={mode === "registro" ? "new-password" : "current-password"} required /></label>
+      {mode !== "recuperar" && (
+        <label>Contraseña<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} autoComplete={mode === "registro" ? "new-password" : "current-password"} required /></label>
+      )}
+      {mode === "login" && (
+        <button type="button" className="link small" style={{ alignSelf: "flex-end", marginTop: -6 }} onClick={() => switchTo("recuperar")}>¿Olvidaste tu contraseña?</button>
+      )}
       {mode === "registro" && (
         <label style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 4 }} />
@@ -90,12 +111,14 @@ function AuthForm() {
       )}
       {msg && <div className={`alert ${msg.kind === "ok" ? "alert-ok" : "alert-err"}`} role="status">{msg.text}</div>}
       {canResend && <button type="button" className="btn btn-ghost btn-block" onClick={resend} disabled={busy}>Reenviar correo de confirmación</button>}
-      <button className="btn btn-block" disabled={busy}>{busy ? <span className="spin" /> : mode === "registro" ? "Crear cuenta gratis" : "Entrar"}</button>
-      {mode === "login" && <button type="button" className="btn btn-ghost btn-block" onClick={magicLink} disabled={busy}>Recibir enlace por correo</button>}
+      <button className="btn btn-block" disabled={busy}>
+        {busy ? <span className="spin" /> : mode === "registro" ? "Crear cuenta gratis" : mode === "recuperar" ? "Enviar enlace" : "Entrar"}
+      </button>
+      {mode === "login" && <button type="button" className="btn btn-ghost btn-block" onClick={magicLink} disabled={busy}>Entrar sin contraseña (enlace por correo)</button>}
       <p className="small muted" style={{ textAlign: "center" }}>
-        {mode === "registro" ? "¿Ya tienes cuenta? " : "¿Primera vez? "}
-        <button type="button" className="link" onClick={() => { setMode(mode === "registro" ? "login" : "registro"); setMsg(null); }}>
-          {mode === "registro" ? "Entra aquí" : "Crea tu cuenta"}
+        {mode === "registro" ? "¿Ya tienes cuenta? " : mode === "recuperar" ? "¿La recordaste? " : "¿Primera vez? "}
+        <button type="button" className="link" onClick={() => switchTo(mode === "login" ? "registro" : "login")}>
+          {mode === "login" ? "Crea tu cuenta" : "Entra aquí"}
         </button>
       </p>
     </form>
