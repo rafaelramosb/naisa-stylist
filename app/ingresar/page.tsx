@@ -39,16 +39,17 @@ function AuthForm() {
       }
       if (mode === "registro") {
         if (!consent) throw new Error("Debes aceptar la política de tratamiento de datos.");
-        const { data, error } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { full_name: name }, emailRedirectTo: redirectTo() },
+        const r = await fetch("/api/auth/register", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name, consent }),
         });
-        if (error) throw error;
-        if (!data.session) {
-          setMsg({ kind: "ok", text: `Te enviamos un correo a ${email} para confirmar tu cuenta. Si no llega en 2 minutos, revisa spam o reenvíalo.` });
-          setCanResend(true);
-          return;
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (body.exists) setMode("login");
+          throw new Error(body.error ?? "No pudimos crear la cuenta.");
         }
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
