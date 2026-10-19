@@ -1,6 +1,7 @@
 import { aiEnabled } from "@/lib/claude";
 import { mpEnabled } from "@/lib/mercadopago";
 import { json } from "@/lib/http";
+import { serverSecretFingerprint } from "@/lib/server-secret";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,8 @@ export async function GET() {
     schema,
     ai: aiEnabled() ? "claude" : "reglas",
     payments: mpEnabled() ? "mercadopago" : "no_configurado",
-    subscription_secret: !!process.env.SUBSCRIPTION_APPLY_SECRET,
+    subscription_secret: !!serverSecretFingerprint(),
+    secret_fingerprint: serverSecretFingerprint()?.slice(0, 64) ?? null,
     time: new Date().toISOString(),
   }, schema === "ok" ? 200 : 503);
 }

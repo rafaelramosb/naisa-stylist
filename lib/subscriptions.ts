@@ -1,5 +1,6 @@
 import { createAnonClient } from "./supabase/server";
 import { getSubscription, type Preapproval } from "./mercadopago";
+import { serverSecret } from "./server-secret";
 
 /** Consulta la suscripción en Mercado Pago (fuente de verdad) y la aplica en la base. */
 export async function syncPreapproval(id: string, expectedUserId?: string): Promise<Preapproval | null> {
@@ -7,7 +8,7 @@ export async function syncPreapproval(id: string, expectedUserId?: string): Prom
   const [userId, interval] = (sub.external_reference ?? "").split(":");
   if (!userId || !/^[0-9a-f-]{36}$/i.test(userId)) return null;
   if (expectedUserId && expectedUserId !== userId) return null;
-  const secret = process.env.SUBSCRIPTION_APPLY_SECRET;
+  const secret = serverSecret();
   if (!secret) throw new Error("SUBSCRIPTION_APPLY_SECRET no configurado");
 
   const { error } = await createAnonClient().rpc("mp_apply_subscription", {

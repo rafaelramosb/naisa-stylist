@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fail, json } from "@/lib/http";
 import { createAnonClient } from "@/lib/supabase/server";
+import { serverSecret } from "@/lib/server-secret";
 
 export const runtime = "nodejs";
 
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
     const field = parsed.error.issues[0]?.path[0];
     return fail(field === "password" ? "La contraseña debe tener al menos 8 caracteres." : field === "consent" ? "Debes aceptar la política de tratamiento de datos." : "Revisa el correo ingresado.");
   }
-  const secret = process.env.SUBSCRIPTION_APPLY_SECRET;
+  const secret = serverSecret();
   if (!secret) return fail("Registro no disponible en este momento.", 503);
 
   const { data, error } = await createAnonClient().rpc("register_user", {
