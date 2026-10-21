@@ -216,3 +216,4 @@ input:focus, select:focus, textarea:focus { border-color: var(--mauve); box-shad
 .video-welcome { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; }
 .video-welcome .video-frame { border-width: 7px; border-radius: 26px; }
 @media (max-width: 600px) { .video-welcome { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+.video-welcome .video-showcase { width: 100%; max-width: 220px; justify-self: center; }
