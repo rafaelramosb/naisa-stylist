@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { VideoShowcase } from "@/components/VideoShowcase";
+import { VIDEO_HISTORIA } from "@/lib/videos";
 import { OCCASIONS, OCCASION_MAP } from "@/lib/occasions";
 import { createClient } from "@/lib/supabase/server";
 import type { OccasionId } from "@/lib/types";
@@ -30,6 +32,18 @@ export default async function Dashboard() {
         <span className="eyebrow">Tu estudio de estilo</span>
         <h1 style={{ fontSize: "clamp(2rem,5vw,3rem)" }}>Hola{first ? `, ${first}` : ""}. ¿A dónde vas hoy?</h1>
       </div>
+
+      {steps.some((s) => !s.done) && (
+        <div className="card video-welcome">
+          <VideoShowcase video={VIDEO_HISTORIA} compact />
+          <div className="stack">
+            <span className="eyebrow">Bienvenida</span>
+            <h3>Mira cómo funciona en 31 segundos</h3>
+            <p className="small muted">Valentina pasó de &ldquo;no tengo qué ponerme&rdquo; a llegar perfecta a una boda. Tú lo haces en tres pasos:</p>
+            <Link href="/como-funciona" className="link small">Ver la guía paso a paso</Link>
+          </div>
+        </div>
+      )}
 
       {steps.some((s) => !s.done) && (
         <div className="card stack">

@@ -23,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <span className="small">{profile?.full_name ?? user.email}</span>
           {premium ? <span className="pill pill-gold"><Icon name="crown" size={14} /> Premium</span>
             : <Link href="/app/plan" className="btn btn-gold btn-sm">Pasar a Premium</Link>}
+          <Link href="/como-funciona" className="link small">Ver cómo funciona</Link>
           <form action="/auth/signout" method="post"><button className="link small">Cerrar sesión</button></form>
         </div>
       </aside>

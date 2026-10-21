@@ -3,6 +3,8 @@ import { Brand } from "@/components/Brand";
 import { HeroArt } from "@/components/HeroArt";
 import { Icon } from "@/components/Icon";
 import { OCCASIONS } from "@/lib/occasions";
+import { VideoShowcase } from "@/components/VideoShowcase";
+import { VIDEO_HISTORIA } from "@/lib/videos";
 import { PLAN_FEATURES, PRICES, formatCOP } from "@/lib/plans";
 
 export default function Landing() {
@@ -14,7 +16,8 @@ export default function Landing() {
         <div className="container">
           <Brand />
           <nav className="nav-links" aria-label="Principal">
-            <a href="#como-funciona" className="hide-m">Cómo funciona</a>
+            <a href="#video" className="hide-m">Ver video</a>
+            <Link href="/como-funciona" className="hide-m">Cómo funciona</Link>
             <a href="#precios" className="hide-m">Precios</a>
             <Link href="/descargar" className="hide-m">App Android</Link>
             <Link href="/ingresar" className="btn btn-sm">Entrar</Link>
@@ -34,7 +37,7 @@ export default function Landing() {
               </p>
               <div className="row">
                 <Link href="/ingresar?modo=registro" className="btn btn-gold">Empieza gratis <Icon name="arrow" size={18} /></Link>
-                <Link href="/descargar" className="btn btn-ghost"><Icon name="phone" size={18} /> Instalar en Android</Link>
+                <a href="#video" className="btn btn-ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg> Ver cómo funciona</a>
               </div>
               <div className="row small muted" style={{ "--gap": "18px" } as React.CSSProperties}>
                 <span className="row" style={{ "--gap": "6px" } as React.CSSProperties}><Icon name="shield" size={16} /> Fotos privadas y cifradas</span>
@@ -43,6 +46,21 @@ export default function Landing() {
               </div>
             </div>
             <div className="hero-visual"><HeroArt /></div>
+          </div>
+        </section>
+
+        <section className="section" id="video">
+          <div className="container stack" style={{ "--gap": "32px" } as React.CSSProperties}>
+            <div className="stack" style={{ maxWidth: 680 }}>
+              <span className="eyebrow">Mírala en acción · 31 segundos</span>
+              <h2>De &ldquo;no tengo qué ponerme&rdquo; a llegar perfecta</h2>
+              <p className="muted">Acompaña a Valentina la noche antes de la boda de su mejor amiga: una foto, su clóset y la ocasión. Toca cualquier paso para verlo.</p>
+            </div>
+            <VideoShowcase video={VIDEO_HISTORIA} autoPreview />
+            <div className="row">
+              <Link href="/ingresar?modo=registro" className="btn btn-gold">Probarlo gratis <Icon name="arrow" size={18} /></Link>
+              <Link href="/como-funciona" className="link small">Más videos y la guía paso a paso</Link>
+            </div>
           </div>
         </section>
 

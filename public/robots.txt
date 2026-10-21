@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /app
 Disallow: /api
+Allow: /videos/
